@@ -1,0 +1,644 @@
+swagger: '2.0'
+info:
+  description: >
+    This is a sample server Petstore server.
+
+
+
+
+
+
+
+
+
+    [Learn about Swagger](http://swagger.io) or join the IRC channel `#swagger`
+    on irc.freenode.net.
+
+
+
+
+
+
+
+
+
+    For this sample, you can use the api key `special-key` to test the
+    authorization filters
+  version: 1.0.0
+  title: vitaSpider API Document
+  termsOfService: 'http://helloreverb.com/terms/'
+  contact:
+    name: apiteam@swagger.io
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+host: petstore.swagger.io
+basePath: /v2
+schemes:
+  - http
+paths:
+  /account:
+    post:
+      tags:
+        - account
+      summary: Create user
+      description: This can only be done by the logged in user.
+      operationId: createUser
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: Created user object
+          required: true
+          schema:
+            $ref: '#/definitions/Account'
+      responses:
+        '200':
+          description: Account successfully created
+        '400':
+          description: account already existed (activated)
+        '401':
+          description: 'account exist, but not activated and send activation mail again'
+        '402':
+          description: Email is invalid
+        '403':
+          description: password is too simple
+    put:
+      tags:
+        - account
+      description: >
+        Update account user info, not all attributes have to be present. If email
+        is being updated, email has to check uniqueness and send activation mail.
+        If user email is changed, this account will be logout.
+      parameters:
+        - in: body
+          name: user basic info
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+      responses:
+        '200':
+          description: Update success
+          schema:
+            $ref: '#/definitions/User'
+        '401':
+          description: User password does not meet requirement
+  /account/exist:
+    get:
+      tags:
+        - account
+      summary: check if the account name is available
+      description: check if an account is exist
+      operationId: userExist
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          description: the email as account name to check existance
+          required: true
+          type: string
+      responses:
+        '200':
+          description: user does not exist
+        '400':
+          description: user account exists
+        '401':
+          description: input is empty
+  /account/auth:
+    post:
+      tags:
+        - account
+      description: login an account
+      parameters:
+        - in: body
+          name: login info
+          description: account login info
+          required: true
+          schema:
+            $ref: '#/definitions/Account'
+      responses:
+        '200':
+          description: account login successfully
+          schema:
+            $ref: '#/definitions/User'
+        '401':
+          description: "account name doesn't exist"
+        '402':
+          description: password is incorrect
+    delete:
+      tags:
+        - account
+      description: log out an account
+      responses:
+        '200':
+          description: account logout successfully
+          schema:
+            type: object
+  /company/:
+    post:
+      tags:
+        - company
+      description: "For createing user's own company only. In MongoDB, save companyId to user company attribute. Save the company object in company document. \n"
+      parameters:
+        - in: body
+          name: company meta data
+          description: 'Company name is required, the rest is optional'
+          required: true
+          schema:
+            $ref: '#/definitions/Company'
+      responses:
+        '200':
+          description: success
+          schema:
+            $ref: '#/definitions/Company'
+        '401':
+          description: company name can not be empty
+        '402':
+          description: user company exist
+    put:
+      description: "update user's own company meta data"
+      tags:
+        - company
+      parameters:
+        - in: body
+          name: company meta data
+          description: not all attributes has to be present
+          schema:
+            $ref: '#/definitions/Company'
+      responses:
+        '200':
+          description: success
+          schema:
+            $ref: '#/definitions/Company'
+        '401':
+          description: company name can not be empty
+    get:
+      tags:
+        - company
+      description: "get user's own company information"
+      responses:
+        '200':
+          description: sucess
+          schema:
+            $ref: '#/definitions/Company'
+  /client/:
+    get:
+      description: return list of clients
+      tags:
+        - client
+      parameters:
+        - in: query
+          name: page_size
+          description: default is 20
+          required: false
+          type: string
+        - in: query
+          name: page_index
+          description: Starts from 0. Return page 0 if not present
+          type: string
+          required: false
+      responses:
+        '200':
+          description: success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Company'
+    post:
+      tags:
+        - client
+      description: "create a client company, private record. In MongoDB, just create a record in company document, and save companyId to the array of client attribute of  user's own company. \n"
+      parameters:
+        - in: body
+          name: client
+          schema:
+            $ref: '#/definitions/Company'
+      responses:
+        '200':
+          description: success
+          schema:
+            $ref: '#/definitions/Company'
+        '401':
+          description: company name is empty
+        '402':
+          description: email to receive invoice is empty
+  '/client/{clientId}':
+    get:
+      description: get particualr client detail by client ID
+      tags:
+        - client
+      parameters:
+        - in: path
+          description: 'client ID, which is the same as company ID in company document'
+          name: clientId
+          required: true
+          type: string
+      responses:
+        '200':
+          description: success
+          schema:
+            $ref: '#/definitions/Company'
+        '400':
+          description: "client doesn't exist, or doesn't belong to this company"
+    put:
+      description: update private client info by ID
+      tags:
+        - client
+      parameters:
+        - in: path
+          required: true
+          name: clientId
+          type: string
+        - in: body
+          required: true
+          name: client data
+          description: Only update attributes that are present in the object
+          schema:
+            $ref: '#/definitions/Company'
+      responses:
+        '200':
+          description: success
+          schema:
+            $ref: '#/definitions/Company'
+        '400':
+          description: "client doesn't exist, or doesn't belong to this company"
+    delete:
+      tags:
+        - client
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          type: string
+      responses:
+        '200':
+          description: success
+        '400':
+          description: "company name doesn't exist"
+  /request/:
+    post:
+      tags:
+        - request
+      parameters:
+        - in: body
+          required: true
+          name: request
+          schema:
+            $ref: '#/definitions/Request'
+      responses:
+        '200':
+          description: success
+    get:
+      tags:
+        - request
+      parameters:
+        - in: query
+          name: page_index
+          type: string
+          required: false
+        - in: query
+          name: page_size
+          type: string
+          required: false
+      responses:
+        '200':
+          description: success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Request'
+    put:
+      description: Approve or reject request. User can only approve or reject request that is sent to his company.
+      tags:
+        - request
+      parameters:
+        - in: body
+          required: true
+          description: approve or reject request
+          name: request
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+      responses:
+        '200':
+          description: successfully rejected or approved request
+          schema:
+            $ref: '#/definitions/Request'
+        '401':
+          description: fsfdasfdsa
+          schema:
+            type: string
+            default: can not change request status
+  /invoice/:
+    get:
+      description: "get the invoice list, containing the meta data of each invoice, but not invoice representation. \n"
+      tags:
+        - invoice
+      parameters:
+        - in: query
+          name: page_size
+          type: string
+          required: false
+          default: '20'
+        - in: query
+          name: page_index
+          type: string
+          required: false
+          default: '0'
+        - in: query
+          name: type
+          required: true
+          type: string
+      responses:
+        '200':
+          description: success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/InvoiceMeta'
+        '401':
+          description: invoice type error
+          schema:
+            type: string
+            default: "type is not specified, must be 'sent' or 'received'"
+    post:
+      description: send invoice
+      tags:
+        - invoice
+      parameters: 
+        - in: body
+          name: invoice
+          required: true
+          schema:
+            $ref: '#/definitions/InvoiceMeta'
+      responses: 
+        '200':
+          description: success
+          schema:
+            type: string
+            default: 'invoice successfully sent'
+    put:
+      description: 'used to void invoice, invoice cannot be changed if sent'
+      tags:
+        - invoice
+      parameters:
+        - in: body
+          name: voidObject
+          required: true
+          schema:
+            type: object
+            properties:
+              status: 
+                type: string
+                format: 'voided'
+                # can only be one value 'voided'
+      responses:
+        '200':
+          description: success
+          schema:
+            type: string
+            default: invoice void success
+        '401':
+          description: if 'status' is not 'voided', it is unknown action
+          schema:
+            type: string
+            default: unknown action
+  /invoice/payment:
+    post:
+      description: create a payment, pay invoice
+      tags:
+        - invoice
+      parameters:
+        - in: body
+          name: payment
+          schema:
+            $ref: '#/definitions/Payment'
+      responses:
+        '200':
+          description: payment successfully created
+          schema:
+            type: object
+            properties: 
+              message: 
+                type: string
+              transactionId:
+                type: string
+              timestamp:
+                type: string
+        '401':
+          description: payment for this invoice is already made
+          schema:
+            type: object
+            properties:
+              message: 
+                type: string
+                default: payment is not made, since another payment for this invoice is already in progress
+        '402':
+          description: invoice doesn't exist
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                default: invoice doesn't exist
+        '403':
+          description: bank info is not correct
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                default: bank info not currect
+      
+  /invoice/template:
+    post:
+      description: create invoice template. Each company can only create its own template
+      tags:
+        - invoice
+      parameters:
+        - in: body
+          name: invoiceTemplate
+          description: the template should use specific css ID in html tag to marke
+                        for the invoice meta data
+          schema:
+            $ref: '#/definitions/Template'
+      responses:
+        '200': 
+          description: success
+          schema:
+            type: string
+            default: invoice template created
+    get:
+      description: get invoice template list, only get template id and name
+      tags:
+        - invoice
+      parameters:
+        - in: query
+          name: page_size
+          type: string
+          default: '20'
+        - in: query
+          name: page_index
+          type: string
+          default: '0'
+      responses:
+        '200':
+          description: success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/TemplateMeta'
+            
+  '/invoice/template/{templateId}':
+    get:
+      description: get the invoice template detail info for rendering invoice layout
+      tags:
+        - invoice
+      parameters:
+        - in: path
+          name: templateId
+          type: string
+          required: true
+      responses:
+        '200':
+          description: success
+          schema:
+            $ref: '#/definitions/Template'
+
+definitions:
+  Account:
+    description: same two attributes in User object
+    type: object
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+  User:
+    type: object
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      first:
+        type: string
+      last:
+        type: string
+      role:
+        type: string
+  Company:
+    description: "< The company that could be client or vendor of a company One user to one company. User must create and join a company if he doesn't have any company. User can create many other user under this company for different roles, e.g. staff, manager, or read only user."
+    type: object
+    properties:
+      id:
+        type: string
+        description: Empty when creating a record
+      name:
+        type: string
+        description: 'Not empty when creating record, or updating this field'
+      email:
+        type: string
+        description: 'Email to receive invoice. must be present when creating private client/vendor, otherwise is ignored'
+      address:
+        type: string
+      city:
+        type: string
+      state:
+        type: string
+      zip:
+        type: string
+      country:
+        type: string
+      phone:
+        type: string
+      product_service:
+        type: string
+      year_founded:
+        type: number
+      employee_count:
+        type: number
+  Request:
+    description: client or vendor request JSON
+    type: object
+    properties:
+      clientId:
+        type: string
+      clientName:
+        type: string
+      vendorId:
+        type: string
+      vendorName:
+        type: string
+      fromId:
+        type: string
+      toId:
+        type: string
+      status:
+        type: string
+        description: 'accepted, rejected, or empty'
+  InvoiceMeta:
+    type: object
+    properties:
+      id: 
+        type: string
+      fromId:
+        type: string
+      fromName:
+        type: string
+      toId:
+        type: string
+      toName:
+        type: string
+      status:
+        type: string
+        # sent, voided, overdue, payment sent, payment received
+      term:
+        type: string
+      sentDate:
+        type: string
+      amount:
+        type: number
+      paid:
+        type: string
+      note:
+        type: string
+      invoiceLookId:
+        type: string
+        description: >
+          ID links to invoice representation data (html and css combined data string)
+  Payment:
+    type: object
+    properties:
+      bankAccount:
+        type: string
+      routeNumber:
+        type: string
+      saveBankInfo:
+        type: boolean
+        # if save bank account an routing number to db
+      invoiceId:
+        type: string
+  TemplateMeta:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+  Template:
+    type: object
+    properties:
+      name:
+        type: string
+      html:
+        type: string
+      css:
+        type: string
+      javascript:
+        type: string
+        
