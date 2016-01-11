@@ -6,17 +6,8 @@ info:
 
 
 
-
-
-
-
-
     [Learn about Swagger](http://swagger.io) or join the IRC channel `#swagger`
     on irc.freenode.net.
-
-
-
-
 
 
 
@@ -54,16 +45,45 @@ paths:
           schema:
             $ref: '#/definitions/Account'
       responses:
+        '201':
+          description: > 
+                    code: 2000, message: Account successfully created
+          schema:
+            type: object
+            properties:
+              meta:
+                $ref: '#/definitions/Meta'
+              data:
+                $ref: '#/definitions/NewUserCreated'
         '200':
-          description: Account successfully created
+          description: | 
+                    code: 4001, message: account already existed (activated)
+                    
+                    code: 4002, message: email is invalid
+                    
+                    code: 4003, message: password doesn't meet min requirement
+                    
+                    code: 4004, message: account exist, but not activated and send activation mail again
+          examples: 
+            application/json:
+              name: Puma
+              type: Dog
+              color: Black
+              gender: Female
+              breed: Mixed
+              
+          schema:
+            type: object
+            properties:
+              meta:
+                $ref: '#/definitions/Meta'
+              data:
+                $ref: '#/definitions/NewUserCreated'
         '400':
-          description: account already existed (activated)
-        '401':
-          description: 'account exist, but not activated and send activation mail again'
-        '402':
-          description: Email is invalid
-        '403':
-          description: password is too simple
+          description: 'invalid api call'
+          schema:
+            type: string
+            title: 'bad request'
     put:
       tags:
         - account
@@ -79,11 +99,25 @@ paths:
             $ref: '#/definitions/User'
       responses:
         '200':
-          description: Update success
+          description: |
+            code: 2000, message: Update success
+            
+            code: 4000, message: Password doesn't meet requirement
+            code: 4001, message: account already exist
+            code: 4002, message: account name  invalid
           schema:
-            $ref: '#/definitions/User'
+            type: object
+            properties:
+              meta:
+                $ref: '#/definitions/Meta'
+              data:
+                $ref: '#/definitions/User'
         '401':
           description: User password does not meet requirement
+          schema:
+            type: string
+            title: invalid request
+          
   /account/exist:
     get:
       tags:
@@ -101,11 +135,21 @@ paths:
           type: string
       responses:
         '200':
-          description: user does not exist
-        '400':
-          description: user account exists
+          description: | 
+            code: 2000, message: user account exist
+            code: 2001, message: user account does not exist
+            code: 4002, message: input is not valid
+          schema:
+            type: object
+            properties:
+              meta:
+                $ref: '#/definitions/Meta'
         '401':
-          description: input is empty
+          description: invalid request
+          schema:
+            type: string
+            title: invalid request
+            
   /account/auth:
     post:
       tags:
@@ -120,22 +164,41 @@ paths:
             $ref: '#/definitions/Account'
       responses:
         '200':
-          description: account login successfully
+          description: |
+            account login successfully
+            
+            code: 2000, message: login successfully
+            code: 4001, message: account dosn't exist
+            code: 4002, message: password is incorrect
           schema:
-            $ref: '#/definitions/User'
+            type: object
+            properties:
+              meta:
+                $ref: '#/definitions/Meta'
+              data:
+                $ref: '#/definitions/User'
         '401':
           description: "account name doesn't exist"
-        '402':
-          description: password is incorrect
+          schema:
+            type: string
+            title: invalid request
     delete:
       tags:
         - account
       description: log out an account
       responses:
         '200':
-          description: account logout successfully
+          description: |
+            account logout successfully
+            
+            code: 2000, message: logout success
+            code: 4000, message: logout failed
           schema:
             type: object
+            properties:
+              meta:
+                $ref: '#/definitions/Meta'
+            
   /company/:
     post:
       tags:
@@ -150,13 +213,24 @@ paths:
             $ref: '#/definitions/Company'
       responses:
         '200':
-          description: success
+          description: | 
+            success
+            code: 2000, message: create company successful
+            code: 4000, message: company name cannot be empty
+            code: 4001, message: user company exist
           schema:
-            $ref: '#/definitions/Company'
+            type: object
+            properties:
+              meta:
+                $ref: '#/definitions/Meta'
+              data:
+                $ref: '#/definitions/Company'
         '401':
           description: company name can not be empty
-        '402':
-          description: user company exist
+          schema:
+            type: string
+            title: invalid request
+       
     put:
       description: "update user's own company meta data"
       tags:
@@ -169,20 +243,38 @@ paths:
             $ref: '#/definitions/Company'
       responses:
         '200':
-          description: success
+          description: | 
+            code: 2000, message: update success
+            code: 4000, message: company name cannot be empty
           schema:
-            $ref: '#/definitions/Company'
+            type: object
+            properties:
+              meta:
+                $ref: '#/definitions/Meta'
+              data:
+                $ref: '#/definitions/Company'
         '401':
-          description: company name can not be empty
+          description: invalid request
+          schema:
+            type: string
+            title: invalid request
     get:
       tags:
         - company
       description: "get user's own company information"
       responses:
         '200':
-          description: sucess
+          description: | 
+            sucess
+            code: 2000, message: success
+          
           schema:
-            $ref: '#/definitions/Company'
+            type: object
+            properties:
+              meta:
+                $ref: '#/definitions/Meta'
+              data:
+                $ref: '#/definitions/Company'
   /client/:
     get:
       description: return list of clients
@@ -201,11 +293,18 @@ paths:
           required: false
       responses:
         '200':
-          description: success
+          description: | 
+            success
+            code: 2000, message: success
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/Company'
+            type: object
+            properties:
+              meta:
+                $ref: '#/definitions/Meta'
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/Company'
     post:
       tags:
         - client
@@ -217,13 +316,24 @@ paths:
             $ref: '#/definitions/Company'
       responses:
         '200':
-          description: success
+          description: | 
+            success
+            code: 2000, message: success
+            code: 4000, message: company name cannot be empty
+            code: 4001, message: email to receive invoice is empty
           schema:
-            $ref: '#/definitions/Company'
+            type: object
+            properties:
+              meta:
+                $ref: '#/definitions/Meta'
+              data:
+                $ref: '#/definitions/Company'
         '401':
           description: company name is empty
-        '402':
-          description: email to receive invoice is empty
+          schema:
+            type: string
+            title: invalid request 
+        
   '/client/{clientId}':
     get:
       description: get particualr client detail by client ID
@@ -237,11 +347,22 @@ paths:
           type: string
       responses:
         '200':
-          description: success
+          description: | 
+            success
+            code: 4000, message: client doesn't exist or cannot be accessed
+        
           schema:
-            $ref: '#/definitions/Company'
-        '400':
-          description: "client doesn't exist, or doesn't belong to this company"
+            type: object
+            properties:
+              meta:
+                $ref: '#/definitions/Meta'
+              data:
+                $ref: '#/definitions/Company'
+        '401':
+          description: invalid request
+          schema:
+            type: string
+            title: invalid request
     put:
       description: update private client info by ID
       tags:
@@ -259,11 +380,22 @@ paths:
             $ref: '#/definitions/Company'
       responses:
         '200':
-          description: success
+          description: | 
+            success
+            code: 2000, message: success
+            code: 4000, message: client doesn't exist or cannot be accessed
           schema:
-            $ref: '#/definitions/Company'
+            type: object
+            properties:
+              meta:
+                $ref: '#/definitions/Meta'
+              data:
+                $ref: '#/definitions/Company'
         '400':
-          description: "client doesn't exist, or doesn't belong to this company"
+          description: invalid request
+          schema:
+            type: string
+            title: invalid request
     delete:
       tags:
         - client
@@ -274,9 +406,20 @@ paths:
           type: string
       responses:
         '200':
-          description: success
-        '400':
-          description: "company name doesn't exist"
+          description: | 
+            success
+            code: 2000, message: success
+            code: 4000, message: company doesn't exist or cannot be deleted. 
+          schema:
+            type: object
+            properties:
+              meta:
+                $ref: '#/definitions/Meta'
+        '401':
+          description: invalid request
+          schema:
+            type: string
+            title: invalid request
   /request/:
     post:
       tags:
@@ -289,7 +432,15 @@ paths:
             $ref: '#/definitions/Request'
       responses:
         '200':
-          description: success
+          description: | 
+            success
+            code: 2000, message: success
+            
+          schema:
+            type: object
+            properties:
+              meta:
+                $ref: '#/definitions/Meta'
     get:
       tags:
         - request
@@ -304,11 +455,18 @@ paths:
           required: false
       responses:
         '200':
-          description: success
+          description: | 
+            success
+            code: 2000, message: success
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/Request'
+            type: object
+            properties:
+              meta:
+                $ref: '#/definitions/Meta'
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/Request'
     put:
       description: Approve or reject request. User can only approve or reject request that is sent to his company.
       tags:
@@ -325,14 +483,22 @@ paths:
                 type: string
       responses:
         '200':
-          description: successfully rejected or approved request
+          description: | 
+            successfully rejected or approved request
+            code: 2000, message: success
+            code: 4000, message: can not update request
           schema:
-            $ref: '#/definitions/Request'
+            type: object
+            properties:
+              meta:
+                $ref: '#/definitions/Meta'
+              data:
+                $ref: '#/definitions/Request'
         '401':
-          description: fsfdasfdsa
+          description: bad request
           schema:
             type: string
-            default: can not change request status
+            title: invalid request
   /invoice/:
     get:
       description: "get the invoice list, containing the meta data of each invoice, but not invoice representation. \n"
@@ -355,61 +521,87 @@ paths:
           type: string
       responses:
         '200':
-          description: success
+          description: | 
+            success
+            code: 2000, message: success
+            code: 4000, message: type is not specified, must be 'sent' or 'received'
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/InvoiceMeta'
+            type: object
+            properties:
+              meta:
+                $ref: '#/definitions/Meta'
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/InvoiceMeta'
         '401':
-          description: invoice type error
+          description: invalid request
           schema:
             type: string
-            default: "type is not specified, must be 'sent' or 'received'"
+            title: invalid request
     post:
       description: send invoice
       tags:
         - invoice
-      parameters: 
+      parameters:
         - in: body
           name: invoice
           required: true
           schema:
             $ref: '#/definitions/InvoiceMeta'
-      responses: 
+      responses:
         '200':
-          description: success
+          description: | 
+            success
+            code: 2000, message: invoice sent successfully
+            code: 4000, message: fromId, toId is empty
+            code: 4001, message: fromId or toId is not correct
+          schema:
+            type: object
+            properties:
+              meta:
+                $ref: '#/definitions/Meta'
+        '401':
+          description: bad request
           schema:
             type: string
-            default: 'invoice successfully sent'
+            title: bad request
     put:
       description: 'used to void invoice, invoice cannot be changed if sent'
       tags:
         - invoice
       parameters:
         - in: body
-          name: voidObject
+          name: invoiceId
           required: true
           schema:
             type: object
             properties:
-              status: 
+              invoiceid: 
                 type: string
-                format: 'voided'
-                # can only be one value 'voided'
+        
       responses:
         '200':
-          description: success
+          description: | 
+            success
+            code: 2000, message: invoice voided successfully
+            code: 4000, message: invoice id is not correct, not accessable 
+            code: 4001, message: invoice is already voided
           schema:
-            type: string
-            default: invoice void success
+            type: object
+            properties:
+              meta:
+                $ref: '#/definitions/Meta'
+            
         '401':
-          description: if 'status' is not 'voided', it is unknown action
+          description: invalid request
           schema:
             type: string
-            default: unknown action
+            title: invalid request
+            
   /invoice/payment:
     post:
-      description: create a payment, pay invoice
+      description: 'create a payment, pay invoice'
       tags:
         - invoice
       parameters:
@@ -419,41 +611,26 @@ paths:
             $ref: '#/definitions/Payment'
       responses:
         '200':
-          description: payment successfully created
+          description: | 
+            payment successfully created
+            code: 2000, message: payment successfully made
+            code: 4000, message: payment failed, since payment was made before
+            code: 4001, message: invoice doesn't exist, or cannot made
+            code: 4002, message: banking info error
           schema:
             type: object
-            properties: 
-              message: 
-                type: string
-              transactionId:
-                type: string
-              timestamp:
-                type: string
+            properties:
+              meta:
+                $ref: '#/definitions/Meta'
+              data:
+                $ref: '#/definitions/PaymentConfirm'
+
         '401':
-          description: payment for this invoice is already made
+          description: invalid request
           schema:
-            type: object
-            properties:
-              message: 
-                type: string
-                default: payment is not made, since another payment for this invoice is already in progress
-        '402':
-          description: invoice doesn't exist
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-                default: invoice doesn't exist
-        '403':
-          description: bank info is not correct
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-                default: bank info not currect
-      
+            type: string
+            title: invalid request
+           
   /invoice/template:
     post:
       description: create invoice template. Each company can only create its own template
@@ -462,18 +639,26 @@ paths:
       parameters:
         - in: body
           name: invoiceTemplate
-          description: the template should use specific css ID in html tag to marke
-                        for the invoice meta data
+          description: the template should use specific css ID in html tag to marke for the invoice meta data
           schema:
             $ref: '#/definitions/Template'
       responses:
-        '200': 
-          description: success
+        '200':
+          description: |
+            success
+            code: 2000, message: template created success
+          schema:
+            type: object
+            properties:
+              meta:
+                $ref: '#/definitions/Meta'
+        '401':
+          description: invalid request
           schema:
             type: string
-            default: invoice template created
+            title: invalid request
     get:
-      description: get invoice template list, only get template id and name
+      description: 'get invoice template list, only get template id and name'
       tags:
         - invoice
       parameters:
@@ -487,12 +672,24 @@ paths:
           default: '0'
       responses:
         '200':
-          description: success
+          description: |
+            success
+            code: 2000, message: success
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/TemplateMeta'
-            
+            type: object
+            properties:
+              meta:
+                $ref: '#/definitions/Meta'
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/TemplateMeta'
+        '401':
+          description: invalid request
+          schema:
+            type: string
+            title: invalid request
+              
   '/invoice/template/{templateId}':
     get:
       description: get the invoice template detail info for rendering invoice layout
@@ -505,10 +702,22 @@ paths:
           required: true
       responses:
         '200':
-          description: success
+          description: | 
+            success
+            code: 2000, message: success
+            code: 4000, message: invalid template ID 
           schema:
-            $ref: '#/definitions/Template'
-
+            type: object
+            properties:
+              meta:
+                $ref: '#/definitions/Meta'
+              data:
+                $ref: '#/definitions/Template'
+        '401':
+          description: invalid request
+          schema:
+            type: string
+            title: invalid request
 definitions:
   Account:
     description: same two attributes in User object
@@ -531,6 +740,14 @@ definitions:
         type: string
       role:
         type: string
+  NewUserCreated:
+    type: object
+    properties:
+      id:
+        type: string
+      email:
+        type: string
+      
   Company:
     description: "< The company that could be client or vendor of a company One user to one company. User must create and join a company if he doesn't have any company. User can create many other user under this company for different roles, e.g. staff, manager, or read only user."
     type: object
@@ -584,7 +801,7 @@ definitions:
   InvoiceMeta:
     type: object
     properties:
-      id: 
+      id:
         type: string
       fromId:
         type: string
@@ -596,7 +813,6 @@ definitions:
         type: string
       status:
         type: string
-        # sent, voided, overdue, payment sent, payment received
       term:
         type: string
       sentDate:
@@ -610,7 +826,8 @@ definitions:
       invoiceLookId:
         type: string
         description: >
-          ID links to invoice representation data (html and css combined data string)
+          ID links to invoice representation data (html and css combined data
+          string)
   Payment:
     type: object
     properties:
@@ -620,7 +837,6 @@ definitions:
         type: string
       saveBankInfo:
         type: boolean
-        # if save bank account an routing number to db
       invoiceId:
         type: string
   TemplateMeta:
@@ -641,4 +857,18 @@ definitions:
         type: string
       javascript:
         type: string
-        
+  Meta:
+    type: object
+    properties:
+      code:
+        type: number
+      message:
+        type: string
+  PaymentConfirm:
+    type: object
+    properties:
+      transactionId:
+        type: string
+      timestamp:
+        type: string
+

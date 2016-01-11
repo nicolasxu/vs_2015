@@ -3,10 +3,13 @@ var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
+var session = require('express-session'); // added
+var RedisStore = require('connect-redis')(session); // added
 var bodyParser = require('body-parser');
 
-var routes = require('./routes/index');
-var users = require('./routes/users');
+// make sure mongoDB is running in OS( mongod)
+require('./db.connection')(); // connect to data base
+var allRoutes = require('./routes');
 
 var app = express();
 
@@ -20,10 +23,21 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(session({
+  resave: true,
+  saveUninitialized: true,
+  store: new RedisStore({
+    host: 'localhost',
+    port: 6379
+  }),
+  secret: '0FFD9D8D-78F1-4A30-9A4E-0940ADE81111',
+  cookie: {path: '/', maxAge: 3600000}
+}));
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', routes);
-app.use('/users', users);
+
+
+app.use('/', allRoutes); // mount all routes
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
