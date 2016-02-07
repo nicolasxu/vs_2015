@@ -62,8 +62,6 @@ paths:
                     code: 4002, message: email is invalid
                     
                     code: 4003, message: password doesn't meet min requirement
-                    
-                    code: 4004, message: account exist, but not activated and send activation mail again
           examples: 
             application/json:
               name: Puma
