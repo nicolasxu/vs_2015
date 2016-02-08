@@ -49,7 +49,7 @@ function mountRoutes(router) {
 			})
 			.then(function(data){
 				// 5. display success message
-				res.status(201).end(message.success);
+				res.status(201).json(message.success);
 			});
 			/*  no need to catch error here. let it catch by next mid ware
 			
