@@ -17,6 +17,7 @@ function removeUser(email) {
 		  			if(err) {
 		  				reject(err);
 		  			} else {
+		  				db.close();
 		  				resolve(results);
 		  			}
 		  		});
@@ -38,7 +39,24 @@ function addUser(email, password) {
 	return rp(options);
 }
 
+function activeUser(email) {
+	var promise = new Promise(function(resolve, reject) {
+		MongoClient.connect(mongoDbUrl, function(err, db){
+			assert.equal(null, err);
+			var collection = db.collection(accountCollectionName);
+			collection.updateOne({email: email}, 
+				{$set: {active: true}}, function(err, result){
+					assert.equal(err, null);
+					db.close();
+					resolve(result);
+				});
+		});
+	});
+	return promise;
+}
+
 module.exports = {
 	addUser   : addUser,
-	removeUser: removeUser
+	removeUser: removeUser,
+	activeUser: activeUser
 }
