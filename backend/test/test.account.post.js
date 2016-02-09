@@ -62,19 +62,6 @@ describe('Test POST /account', function() {
 		    });
     });
   });
-
-  // describe('4002 email is invalid', function () {
-  //   it('should return -1 when the value is not present', function () {
-  //     // assert.equal(-1, [1,2,3].indexOf(5));
-  //     // assert.equal(-1, [1,2,3].indexOf(0));
-  //   });
-  // });
-  // describe('4003 password does not meet min requirement', function () {
-  //   it('should return -1 when the value is not present', function () {
-  //     // assert.equal(-1, [1,2,3].indexOf(5));
-  //     // assert.equal(-1, [1,2,3].indexOf(0));
-  //   });
-  // });
   describe('4001  account already existed (activated) ', function () {
     this.timeout(1000); // set time out for this group
     var email = "payload2@payload2.com";
@@ -101,18 +88,66 @@ describe('Test POST /account', function() {
           done();
         });
     });
+    after(function(done){
+      // delete user
+      helper.removeUser(email)
+        .then(function(){
+          done();
+        })
+    });
     it('4001  account already existed (activated)', function (done) {
 
       helper.addUser(email, password)
         .then(function(res){
-          console.log(res);
+         
           res.code.should.be.eql(4001);
           // { code: 4001, message: 'account already existed (activated)' }
           done();
         })
-
-
-
     });
-  });  
+  }); 
+  describe('4002 email is invalid', function () {
+    this.timeout(1000); // set time out for this group
+    var email = "payload2payload2.com";
+    var password = "123456";
+    var options = { 
+      method: 'POST',
+      uri: target,
+      body: {
+          email: email,
+          password: password
+      },
+      json: true // Automatically stringifies the body to JSON
+    };
+    it('4002 email is invalid', function (done) {
+      rp(options)
+        .then(function(parseBody){
+          parseBody.code.should.be.eql(4002);
+          done();
+        });
+    });
+  });
+  describe('4003 password does not meet min requirement', function () {
+        this.timeout(1000); // set time out for this group
+    var email = "payload3@payload3.com";
+    var password = "1";
+    var options = { 
+      method: 'POST',
+      uri: target,
+      body: {
+          email: email,
+          password: password
+      },
+      json: true // Automatically stringifies the body to JSON
+    };
+    it('4003 password does not meet min requirement', function (done) {
+      rp(options)
+        .then(function(parseBody){
+          
+          parseBody.code.should.be.eql(4003);
+          done();
+        });
+    });
+  });
+ 
 });
